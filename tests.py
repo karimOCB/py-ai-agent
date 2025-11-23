@@ -1,15 +1,13 @@
-from functions.get_files_info import get_files_info
+from functions.get_file_content import get_file_content
 
+result1 = get_file_content("calculator", "main.py")
+result2 = get_file_content("calculator", "pkg/calculator.py")
+result3 = get_file_content("calculator", "/bin/cat")
+result4 = get_file_content("calculator", "pkg/does_not_exist.py") 
 
-result1 = get_files_info("calculator", ".")
-print(result1) 
-
-result2 = get_files_info("calculator", "pkg")
-print(result2)
-
-result3 = get_files_info("calculator", "/bin")
-print(result3) 
-
-result4 = get_files_info("calculator", "../")
-print(result4)
-
+print(f'''
+    {result1}
+    {result2}
+    {result3}
+    {result4}
+''')
