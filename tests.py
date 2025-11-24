@@ -1,13 +1,11 @@
-from functions.get_file_content import get_file_content
+from functions.write_file import write_file
 
-result1 = get_file_content("calculator", "main.py")
-result2 = get_file_content("calculator", "pkg/calculator.py")
-result3 = get_file_content("calculator", "/bin/cat")
-result4 = get_file_content("calculator", "pkg/does_not_exist.py") 
+result1 = write_file("calculator", "lorem.txt", "wait, this isn't lorem ipsum")
+result2 = write_file("calculator", "pkg/morelorem.txt", "lorem ipsum dolor sit amet")
+result3 = write_file("calculator", "/tmp/temp.txt", "this should not be allowed")
 
 print(f'''
     {result1}
     {result2}
     {result3}
-    {result4}
 ''')
