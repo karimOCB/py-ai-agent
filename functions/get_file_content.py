@@ -1,4 +1,5 @@
 import os
+from google.genai import types
 
 def get_file_content(working_directory, file_path):
     abs_work_dir = os.path.abspath(working_directory)
@@ -19,3 +20,18 @@ def get_file_content(working_directory, file_path):
         return f'Error reading file "{file_path}": {e.strerror}'
     except Exception as e:
         return f'An unexpected error occurred while reading file "{file_path}": {e}'
+
+
+schema_get_file_content = types.FunctionDeclaration(
+    name="get_file_content",
+    description="Gets the first 10000 characters of the content of a file.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file": types.Schema(
+                type=types.Type.STRING,
+                description="The file relative to the working directory from which to get the content. If not provided, get the file from the working directory itself.",
+            ),
+        },
+    ),
+)
