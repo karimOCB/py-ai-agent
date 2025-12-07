@@ -25,7 +25,7 @@ def main():
     messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
     if args.verbose:
         print(f"User prompt: {args.user_prompt}\n")
-
+    
     i = 0
     while True:
         i += 1
