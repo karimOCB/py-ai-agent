@@ -1,56 +1,46 @@
 import os
+import argparse
 import sys
+
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
-from functions.get_file_content import schema_get_file_content
-from functions.get_files_info import schema_get_files_info
-from functions.run_python_file import schema_run_python_file
-from functions.write_file import schema_write_file
-from config import system_prompt
-from functions.call_function import call_function
+
+from functions.generate_content import generate_content
+from config import MAX_ITERS
+
 
 def main():
+    parser = argparse.ArgumentParser(description="AI Code Assistant")
+    parser.add_argument("user_prompt", type=str, help="Prompt to send to Gemini")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+    args = parser.parse_args()
+
     load_dotenv()
     api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY environment variable not set")
+    
     client = genai.Client(api_key=api_key)
-    available_functions = types.Tool(
-        function_declarations=[schema_get_files_info, schema_get_file_content, schema_run_python_file, schema_write_file],
-    )
-    verbose = "--verbose" in sys.argv
-    if len(sys.argv) <= 1:
-        print("A prompt is needed to continue")
-        sys.exit(1)
-    messages = [
-        types.Content(role="user", parts=[types.Part(text=sys.argv[1])])
-    ]
-    response = client.models.generate_content(
-        model='gemini-2.0-flash-001', 
-        contents=messages,
-        config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt),
-    )
-    verbose_details = ""
-    if verbose:
-        verbose_details = f"""
-            User prompt: {sys.argv[2]}
-            Prompt tokens: {response.usage_metadata.prompt_token_count}
-            Response tokens: {response.usage_metadata.candidates_token_count}
-        """
-    text = ""
-    fn_responses = []
-    if response.function_calls is not None:
-        for func_call in response.function_calls:
-            result = call_function(func_call, verbose)
-            part = result.parts[0]
-            if not part.function_response or not part.function_response.response:
-                raise Exception("Function call did not return a response")
-            fn_responses.append(part)
-            if verbose:
-                print(f"-> {part.function_response.response}")
-    else:
-        text += response.text  
-        
-    print(f"{text}\n{verbose_details}")
+    messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
+    if args.verbose:
+        print(f"User prompt: {args.user_prompt}\n")
+
+    i = 0
+    while True:
+        i += 1
+        if i > MAX_ITERS:
+            print(f"max iterations ({MAX_ITERS}) reached")
+            sys.exit(1)
+
+        try:
+            final_response = generate_content(client, messages, args.verbose)
+            if final_response:
+                print("Final response:")
+                print(final_response)
+                break 
+        except Exception as e:
+            print(f"Error in generate_content: {e}")
 
 if __name__ == "__main__":
     main()
